@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeverWheel — Колесо Фортуны EcosystemNever</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Montserrat:wght@600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #04060a;
+      --card: rgba(16, 23, 38, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --cyan: #00f0ff;
+      --purple: #a855f7;
+      --gold: #f59e0b;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: #f8fafc;
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh; padding: 24px;
+      display: flex; flex-direction: column; align-items: center;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 70vw; height: 50vh; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.12), rgba(168, 85, 247, 0.1), transparent 70%);
+      filter: blur(90px);
+    }
+    .topbar { width: 100%; max-width: 860px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; gap: 12px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .brand-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.45);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+    }
+    .brand-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; }
+    .brand-title span { color: var(--gold); }
+    .back-btn {
+      padding: 9px 18px; border-radius: 20px; text-decoration: none;
+      color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.35);
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; transition: all 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .back-btn:hover { background: rgba(0, 240, 255, 0.12); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+
+    .wrap { text-align: center; }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5.5vw, 3rem); font-weight: 800; margin-bottom: 8px; }
+    h1 span { background: linear-gradient(135deg, var(--gold), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sub { color: var(--muted); margin-bottom: 40px; font-size: 0.95rem; }
+
+    .stage { position: relative; width: 340px; max-width: 92vw; margin: 0 auto 26px; }
+    .pointer {
+      position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; z-index: 5;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-top: 30px solid #ff2a55;
+      filter: drop-shadow(0 0 10px rgba(255, 42, 85, 0.9));
+    }
+    canvas {
+      width: 340px; max-width: 92vw; height: auto;
+      border-radius: 50%;
+      box-shadow: 0 0 45px rgba(245, 158, 11, 0.35), inset 0 0 25px rgba(0, 0, 0, 0.7);
+      border: 4px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-spin {
+      padding: 16px 46px; border: none; border-radius: 30px; cursor: pointer;
+      background: linear-gradient(135deg, var(--gold), #ff7a00);
+      color: #0a0a0a; font-family: 'Montserrat', sans-serif;
+      font-weight: 800; font-size: 1rem; letter-spacing: 1px;
+      box-shadow: 0 0 28px rgba(245, 158, 11, 0.5); transition: all 0.3s;
+    }
+    .btn-spin:hover:not(:disabled) { box-shadow: 0 0 45px rgba(245, 158, 11, 0.85); transform: translateY(-2px); }
+    .btn-spin:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.7); }
+
+    .prize-box {
+      margin: 30px auto 0; max-width: 480px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      padding: 24px; backdrop-filter: blur(16px); min-height: 92px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      display: flex; flex-direction: column; justify-content: center; gap: 6px;
+    }
+    .prize-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #64748b; letter-spacing: 2px; text-transform: uppercase; }
+    .prize-value { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--gold); }
+    .prize-value.win { animation: winPop 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes winPop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .spins-left { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-top: 16px; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <div class="topbar">
+    <a href="../index.html" class="brand">
+      <div class="brand-logo">🎰</div>
+      <div class="brand-title">Never<span>Wheel</span></div>
+    </a>
+    <a href="../index.html" class="back-btn">← ПОРТФОЛИО</a>
+  </div>
+
+  <div class="wrap">
+    <div class="tag">// Демо-сервис EcosystemNever</div>
+    <h1>Колесо <span>Фортуны Never</span></h1>
+    <p class="sub">Крути колесо и узнай, какой приз тебя ждёт сегодня. Честный рандом — на чистом JavaScript.</p>
+
+    <div class="stage">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="680" height="680"></canvas>
+    </div>
+
+    <button class="btn-spin" id="spinBtn">🎰 КРУТИТЬ!</button>
+
+    <div class="prize-box">
+      <div class="prize-label">// Твой приз</div>
+      <div class="prize-value" id="prizeValue">Крути колесо!</div>
+    </div>
+
+    <div class="spins-left" id="spinsLeft"></div>
+  </div>
+
+<script>
+  const PRIZES = [
+    { label: 'Ночной код',      color: '#00f0ff' },
+    { label: 'NeverParty вечер', color: '#a855f7' },
+    { label: 'Неоновый скин',   color: '#10b981' },
+    { label: 'Ретро-мьют',      color: '#ef4444' },
+    { label: 'Гифка котика',    color: '#ec4899' },
+    { label: 'Реверс-деплой',   color: '#3b82f6' },
+    { label: 'Турбо-буст',      color: '#f59e0b' },
+    { label: 'Супер-пупер приз', color: '#ffffff' }
+  ];
+
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2, R = cx - 10;
+  const seg = (Math.PI * 2) / PRIZES.length;
+
+  let angle = 0;
+  let spinning = false;
+  let spinsLeft = 5;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < PRIZES.length; i++) {
+      const start = angle + i * seg;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, start, start + seg);
+      ctx.closePath();
+      ctx.fillStyle = PRIZES[i].color + (PRIZES[i].color === '#ffffff' ? '' : 'cc');
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(4, 6, 10, 0.85)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Текст сектора
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + seg / 2);
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#04060a';
+      ctx.font = 'bold 30px Montserrat, sans-serif';
+      ctx.fillText(PRIZES[i].label, R - 28, 0);
+      ctx.restore();
+    }
+    // Центр
+    ctx.beginPath();
+    ctx.arc(cx, cy, 52, 0, Math.PI * 2);
+    ctx.fillStyle = '#0a0e17';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 46px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('★', cx, cy + 2);
+  }
+
+  const btn = document.getElementById('spinBtn');
+  const prizeValue = document.getElementById('prizeValue');
+  const spinsLeftEl = document.getElementById('spinsLeft');
+
+  function updateSpins() {
+    spinsLeftEl.textContent = spinsLeft > 0
+      ? 'Осталось вращений сегодня: ' + spinsLeft
+      : 'Лимит вращений исчерпан — вернись завтра 🌙';
+  }
+
+  btn.onclick = () => {
+    if (spinning || spinsLeft <= 0) return;
+    spinning = true;
+    spinsLeft--;
+    updateSpins();
+    btn.disabled = true;
+    btn.textContent = 'Крутится...';
+
+    const targetIdx = Math.floor(Math.random() * PRIZES.length);
+    // Целевой угол: центр сектора должен оказаться под указателем (наверху, -90°)
+    const targetSectorMid = targetIdx * seg + seg / 2;
+    const stopAngle = -targetSectorMid - Math.PI / 2;
+    const spins = 5 + Math.random() * 3;
+    const finalAngle = angle + spins * Math.PI * 2 + (stopAngle - (angle % (Math.PI * 2)));
+    const startAngle = angle;
+    const duration = 4500;
+    const t0 = performance.now();
+
+    function frame(now) {
+      const p = Math.min((now - t0) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 4); // плавное затухание
+      angle = startAngle + (finalAngle - startAngle) * eased;
+      draw();
+
+      if (p < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        spinning = false;
+        btn.disabled = spinsLeft <= 0;
+        btn.textContent = spinsLeft > 0 ? '🎰 КРУТИТЬ ЕЩЁ!' : '🔒 Нет вращений';
+        prizeValue.textContent = PRIZES[targetIdx].label + ' 🎁';
+        prizeValue.classList.remove('win');
+        void prizeValue.offsetWidth;
+        prizeValue.classList.add('win');
+      }
+    }
+    requestAnimationFrame(frame);
+  };
+
+  draw();
+  updateSpins();
+</script>
+</body>
+</html>

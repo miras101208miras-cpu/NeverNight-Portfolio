@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeverCountdown — Обратный отсчёт EcosystemNever</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Montserrat:wght@600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #04060a;
+      --card: rgba(16, 23, 38, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --cyan: #00f0ff;
+      --purple: #a855f7;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: #f8fafc;
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh; padding: 24px;
+      display: flex; flex-direction: column; align-items: center;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 70vw; height: 50vh; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.12), rgba(168, 85, 247, 0.1), transparent 70%);
+      filter: blur(90px);
+    }
+    .topbar { width: 100%; max-width: 820px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; gap: 12px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .brand-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.45);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; box-shadow: 0 0 15px rgba(236, 72, 153, 0.35);
+    }
+    .brand-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; }
+    .brand-title span { color: #ec4899; }
+    .back-btn {
+      padding: 9px 18px; border-radius: 20px; text-decoration: none;
+      color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.35);
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; transition: all 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .back-btn:hover { background: rgba(0, 240, 255, 0.12); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+
+    .wrap { width: 100%; max-width: 820px; text-align: center; }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #ec4899; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5.5vw, 3.1rem); font-weight: 800; margin-bottom: 10px; }
+    h1 span { background: linear-gradient(135deg, #ec4899, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sub { color: var(--muted); margin-bottom: 34px; font-size: 0.95rem; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 30px 26px; backdrop-filter: blur(16px); margin-bottom: 26px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+    }
+    .event-name {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(1.3rem, 4vw, 1.9rem); margin-bottom: 6px;
+    }
+    .event-date { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-bottom: 26px; }
+    .digits { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .digit-block {
+      background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 10px; min-width: 86px;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    .digit-value {
+      font-family: 'JetBrains Mono', monospace; font-weight: 800;
+      font-size: clamp(2rem, 7vw, 3rem);
+      background: linear-gradient(135deg, #ec4899, var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .digit-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; }
+    .done-msg {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem;
+      color: #10b981; text-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    }
+
+    .add-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+    .f-input {
+      flex: 1; min-width: 180px;
+      background: rgba(0, 0, 0, 0.45); border: 1px solid var(--border);
+      border-radius: 12px; padding: 13px 16px; color: #fff; outline: none;
+      font-family: 'Montserrat', sans-serif; font-size: 0.88rem; transition: border 0.3s;
+      color-scheme: dark;
+    }
+    .f-input:focus { border-color: #ec4899; box-shadow: 0 0 12px rgba(236, 72, 153, 0.25); }
+    .f-btn {
+      padding: 13px 24px; border: none; border-radius: 12px; cursor: pointer;
+      background: linear-gradient(135deg, #ec4899, var(--purple));
+      color: #fff; font-weight: 800; font-size: 0.88rem; font-family: 'Montserrat', sans-serif;
+      box-shadow: 0 0 18px rgba(236, 72, 153, 0.4); transition: all 0.3s;
+    }
+    .f-btn:hover { box-shadow: 0 0 30px rgba(236, 72, 153, 0.75); transform: translateY(-1px); }
+    .err { color: #ff5f56; font-size: 0.75rem; min-height: 16px; font-family: 'JetBrains Mono', monospace; }
+
+    .list-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin: 30px 0 12px; text-align: left; }
+    .events-list { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+    .event-item {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+      border-radius: 12px; padding: 13px 16px; cursor: pointer; transition: all 0.3s;
+    }
+    .event-item:hover, .event-item.active { border-color: rgba(236, 72, 153, 0.5); background: rgba(236, 72, 153, 0.06); }
+    .event-item-name { flex: 1; font-weight: 800; font-size: 0.9rem; }
+    .event-item-left { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--purple); }
+    .del-btn {
+      background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444; border-radius: 8px; padding: 5px 10px; cursor: pointer;
+      font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; transition: all 0.25s;
+    }
+    .del-btn:hover { background: rgba(239, 68, 68, 0.25); }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <div class="topbar">
+    <a href="../index.html" class="brand">
+      <div class="brand-logo">⏱</div>
+      <div class="brand-title">Never<span>Countdown</span></div>
+    </a>
+    <a href="../index.html" class="back-btn">← ПОРТФОЛИО</a>
+  </div>
+
+  <div class="wrap">
+    <div class="tag">// Демо-сервис EcosystemNever</div>
+    <h1>Обратный отсчёт <span>Never</span></h1>
+    <p class="sub">До любого события: дня рождения, релиза, каникул. Твои отсчёты живут в браузере.</p>
+
+    <div class="card" id="mainCard">
+      <div class="event-name" id="mainName">...</div>
+      <div class="event-date" id="mainDate"></div>
+      <div class="digits" id="digits">
+        <div class="digit-block"><div class="digit-value" id="dDays">00</div><div class="digit-label">дней</div></div>
+        <div class="digit-block"><div class="digit-value" id="dHours">00</div><div class="digit-label">часов</div></div>
+        <div class="digit-block"><div class="digit-value" id="dMins">00</div><div class="digit-label">минут</div></div>
+        <div class="digit-block"><div class="digit-value" id="dSecs">00</div><div class="digit-label">секунд</div></div>
+      </div>
+    </div>
+
+    <div class="add-form">
+      <input class="f-input" id="nameInput" placeholder="Название события" maxlength="40">
+      <input class="f-input" id="dateInput" type="datetime-local">
+      <button class="f-btn" id="addBtn">➕ Запустить отсчёт</button>
+    </div>
+    <div class="err" id="err"></div>
+
+    <div class="list-title">// Мои события</div>
+    <div class="events-list" id="eventsList"></div>
+  </div>
+
+<script>
+  const KEY = 'nevercountdown_events';
+  let events = JSON.parse(localStorage.getItem(KEY) || '[]');
+  let activeId = events[0]?.id ?? null;
+
+  // Пример по умолчанию
+  if (!events.length) {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    d.setHours(20, 0, 0, 0);
+    events.push({ id: Date.now(), name: 'День экосистемы 🎉', date: d.toISOString() });
+    save();
+  }
+
+  const nameInput = document.getElementById('nameInput');
+  const dateInput = document.getElementById('dateInput');
+  const errEl = document.getElementById('err');
+  const listEl = document.getElementById('eventsList');
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(events)); }
+
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleString('ru-RU', {
+      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function daysLeft(iso) {
+    return Math.ceil((new Date(iso) - Date.now()) / 86400000);
+  }
+
+  document.getElementById('addBtn').onclick = () => {
+    errEl.textContent = '';
+    const name = nameInput.value.trim();
+    const date = dateInput.value;
+    if (!name) { errEl.textContent = '⚠ Назови событие.'; return; }
+    if (!date || new Date(date) <= new Date()) { errEl.textContent = '⚠ Дата должна быть в будущем.'; return; }
+    const ev = { id: Date.now(), name, date: new Date(date).toISOString() };
+    events.push(ev);
+    activeId = ev.id;
+    save();
+    nameInput.value = '';
+    dateInput.value = '';
+    renderList();
+    tick();
+  };
+
+  function renderList() {
+    listEl.innerHTML = '';
+    events.sort((a, b) => new Date(a.date) - new Date(b.date));
+    for (const ev of events) {
+      const item = document.createElement('div');
+      item.className = 'event-item' + (ev.id === activeId ? ' active' : '');
+
+      const nm = document.createElement('div');
+      nm.className = 'event-item-name';
+      nm.textContent = ev.name;
+
+      const left = document.createElement('div');
+      left.className = 'event-item-left';
+      const dl = daysLeft(ev.date);
+      left.textContent = dl > 0 ? 'через ' + dl + ' дн.' : 'сегодня!';
+
+      const del = document.createElement('button');
+      del.className = 'del-btn';
+      del.textContent = '✕';
+      del.onclick = (e) => {
+        e.stopPropagation();
+        events = events.filter((x) => x.id !== ev.id);
+        if (activeId === ev.id) activeId = events[0]?.id ?? null;
+        save();
+        renderList();
+        tick();
+      };
+
+      item.append(nm, left, del);
+      item.onclick = () => { activeId = ev.id; renderList(); tick(); };
+      listEl.appendChild(item);
+    }
+  }
+
+  const pad = (n) => String(n).padStart(2, '0');
+
+  function tick() {
+    const ev = events.find((x) => x.id === activeId);
+    const mainName = document.getElementById('mainName');
+    const mainDate = document.getElementById('mainDate');
+    const digits = document.getElementById('digits');
+    const done = document.getElementById('doneMsg');
+
+    if (!ev) {
+      mainName.textContent = 'Добавь событие 👇';
+      mainDate.textContent = '';
+      digits.style.display = 'none';
+      if (!done) {
+        const d = document.createElement('div');
+        d.className = 'done-msg';
+        d.id = 'doneMsg';
+        d.textContent = 'Пока нет отсчётов';
+        document.getElementById('mainCard').appendChild(d);
+      }
+      return;
+    }
+    if (done) done.remove();
+    digits.style.display = 'flex';
+
+    mainName.textContent = ev.name;
+    mainDate.textContent = fmtDate(ev.date);
+
+    const diff = new Date(ev.date) - Date.now();
+    if (diff <= 0) {
+      digits.style.display = 'none';
+      const d = document.createElement('div');
+      d.className = 'done-msg';
+      d.id = 'doneMsg';
+      d.textContent = '🎉 СОБЫТИЕ НАСТУПИЛО!';
+      document.getElementById('mainCard').appendChild(d);
+      return;
+    }
+    const s = Math.floor(diff / 1000);
+    document.getElementById('dDays').textContent = pad(Math.floor(s / 86400));
+    document.getElementById('dHours').textContent = pad(Math.floor((s % 86400) / 3600));
+    document.getElementById('dMins').textContent = pad(Math.floor((s % 3600) / 60));
+    document.getElementById('dSecs').textContent = pad(s % 60);
+  }
+
+  renderList();
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>

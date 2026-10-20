@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeverTranslate — Переводчик EcosystemNever</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Montserrat:wght@600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #04060a;
+      --card: rgba(16, 23, 38, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --cyan: #00f0ff;
+      --purple: #a855f7;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: #f8fafc;
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh; padding: 24px;
+      display: flex; flex-direction: column; align-items: center;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 70vw; height: 50vh; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.12), rgba(168, 85, 247, 0.1), transparent 70%);
+      filter: blur(90px);
+    }
+    .topbar { width: 100%; max-width: 860px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; gap: 12px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .brand-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.45);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; box-shadow: 0 0 15px rgba(59, 130, 246, 0.35);
+    }
+    .brand-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; }
+    .brand-title span { color: #3b82f6; }
+    .back-btn {
+      padding: 9px 18px; border-radius: 20px; text-decoration: none;
+      color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.35);
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; transition: all 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .back-btn:hover { background: rgba(0, 240, 255, 0.12); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+
+    .wrap { width: 100%; max-width: 860px; }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #3b82f6; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5.5vw, 3rem); font-weight: 800; margin-bottom: 10px; }
+    h1 span { background: linear-gradient(135deg, #3b82f6, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sub { color: var(--muted); margin-bottom: 30px; font-size: 0.95rem; }
+
+    .translator {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 22px; backdrop-filter: blur(16px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+    }
+    .lang-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+    .lang-select {
+      background: rgba(0, 0, 0, 0.45); border: 1px solid var(--border);
+      border-radius: 12px; padding: 11px 16px; color: #fff; outline: none;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; cursor: pointer; transition: border 0.3s;
+    }
+    .lang-select:focus { border-color: #3b82f6; }
+    .swap-btn {
+      width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(168, 85, 247, 0.4);
+      background: rgba(168, 85, 247, 0.1); color: var(--purple); cursor: pointer;
+      font-size: 1.1rem; transition: all 0.3s;
+    }
+    .swap-btn:hover { background: rgba(168, 85, 247, 0.25); box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); transform: rotate(180deg); }
+
+    .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 700px) { .panes { grid-template-columns: 1fr; } }
+    .pane { position: relative; }
+    .pane-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    .t-area {
+      width: 100%; min-height: 170px; resize: vertical;
+      background: rgba(0, 0, 0, 0.45); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px; color: #fff; outline: none;
+      font-family: 'Montserrat', sans-serif; font-size: 0.95rem; line-height: 1.55; transition: border 0.3s;
+    }
+    .t-area:focus { border-color: #3b82f6; box-shadow: 0 0 12px rgba(59, 130, 246, 0.25); }
+    .t-area[readonly] { color: #cbd5e1; cursor: default; }
+    .pane-tools { display: flex; justify-content: space-between; margin-top: 8px; min-height: 20px; }
+    .counter, .status-line { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: #64748b; }
+    .status-line.busy { color: #f59e0b; }
+    .status-line.err { color: #ff5f56; }
+    .mini-btn {
+      padding: 4px 12px; border-radius: 8px; border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05); color: #e2e8f0; cursor: pointer;
+      font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; transition: all 0.25s;
+    }
+    .mini-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .history-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin: 30px 0 12px; }
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+    .hist-item {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; font-size: 0.8rem;
+    }
+    .hist-pair { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--purple); }
+    .hist-src { color: var(--muted); flex: 1; min-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hist-dst { color: #fff; flex: 1; min-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <div class="topbar">
+    <a href="../index.html" class="brand">
+      <div class="brand-logo">🌐</div>
+      <div class="brand-title">Never<span>Translate</span></div>
+    </a>
+    <a href="../index.html" class="back-btn">← ПОРТФОЛИО</a>
+  </div>
+
+  <div class="wrap">
+    <div class="tag">// Демо-сервис EcosystemNever</div>
+    <h1>Переводчик <span>Never</span></h1>
+    <p class="sub">Бесплатный перевод через MyMemory API. Поддерживает русский, английский, казахский и ещё 20+ языков.</p>
+
+    <div class="translator">
+      <div class="lang-row">
+        <select class="lang-select" id="fromLang">
+          <option value="ru" selected>🇷🇺 Русский</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="kk">🇰🇿 Қазақша</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="tr">🇹🇷 Türkçe</option>
+          <option value="zh">🇨🇳 中文</option>
+          <option value="ja">🇯🇵 日本語</option>
+          <option value="ar">🇸🇦 العربية</option>
+        </select>
+        <button class="swap-btn" id="swapBtn" title="Поменять языки местами">⇄</button>
+        <select class="lang-select" id="toLang">
+          <option value="ru">🇷🇺 Русский</option>
+          <option value="en" selected>🇬🇧 English</option>
+          <option value="kk">🇰🇿 Қазақша</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="tr">🇹🇷 Türkçe</option>
+          <option value="zh">🇨🇳 中文</option>
+          <option value="ja">🇯🇵 日本語</option>
+          <option value="ar">🇸🇦 العربية</option>
+        </select>
+      </div>
+
+      <div class="panes">
+        <div class="pane">
+          <div class="pane-label">Исходный текст</div>
+          <textarea class="t-area" id="srcArea" placeholder="Напиши текст для перевода..." maxlength="500"></textarea>
+          <div class="pane-tools">
+            <span class="counter" id="counter">0 / 500</span>
+            <button class="mini-btn" id="clearBtn">Очистить</button>
+          </div>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Перевод</div>
+          <textarea class="t-area" id="dstArea" readonly placeholder="Здесь появится перевод..."></textarea>
+          <div class="pane-tools">
+            <span class="status-line" id="statusLine">готов к работе</span>
+            <button class="mini-btn" id="copyBtn">Копировать</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="history-title">// История переводов</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+<script>
+  const srcArea = document.getElementById('srcArea');
+  const dstArea = document.getElementById('dstArea');
+  const fromLang = document.getElementById('fromLang');
+  const toLang = document.getElementById('toLang');
+  const statusLine = document.getElementById('statusLine');
+  const counter = document.getElementById('counter');
+  const historyList = document.getElementById('historyList');
+  const HISTORY_KEY = 'nevertranslate_history';
+
+  let timer = null;
+  let lastQuery = '';
+
+  function setStatus(text, cls) {
+    statusLine.textContent = text;
+    statusLine.className = 'status-line' + (cls ? ' ' + cls : '');
+  }
+
+  async function translate() {
+    const text = srcArea.value.trim();
+    if (!text || text === lastQuery) return;
+    if (fromLang.value === toLang.value) {
+      dstArea.value = text;
+      setStatus('языки совпадают — текст как был');
+      return;
+    }
+    lastQuery = text;
+    setStatus('перевожу...', 'busy');
+    try {
+      const url = 'https://api.mymemory.translated.net/get?q=' +
+        encodeURIComponent(text) +
+        '&langpair=' + fromLang.value + '|' + toLang.value;
+      const r = await fetch(url);
+      const data = await r.json();
+      const translated = data.responseData?.translatedText;
+      if (translated && !/^MYMEMORY WARNING/i.test(translated)) {
+        dstArea.value = decoded(translated);
+        setStatus('✓ перевод готов');
+        addHistory(text, dstArea.value);
+      } else {
+        dstArea.value = '';
+        setStatus('⚠ лимит API или ошибка перевода', 'err');
+      }
+    } catch {
+      dstArea.value = '';
+      setStatus('⚠ нет интернета / API недоступен', 'err');
+      lastQuery = '';
+    }
+  }
+
+  const decoded = (s) => { const t = document.createElement('textarea'); t.innerHTML = s; return t.value; };
+
+  srcArea.addEventListener('input', () => {
+    counter.textContent = srcArea.value.length + ' / 500';
+    clearTimeout(timer);
+    setStatus('жду ввод...');
+    timer = setTimeout(translate, 700); // авто-перевод с задержкой
+  });
+
+  fromLang.onchange = toLang.onchange = () => { lastQuery = ''; translate(); };
+
+  document.getElementById('swapBtn').onclick = () => {
+    const f = fromLang.value;
+    fromLang.value = toLang.value;
+    toLang.value = f;
+    const tmp = srcArea.value;
+    srcArea.value = dstArea.value;
+    dstArea.value = tmp;
+    counter.textContent = srcArea.value.length + ' / 500';
+    lastQuery = '';
+    translate();
+  };
+
+  document.getElementById('clearBtn').onclick = () => {
+    srcArea.value = '';
+    dstArea.value = '';
+    counter.textContent = '0 / 500';
+    lastQuery = '';
+    setStatus('очищено');
+    srcArea.focus();
+  };
+
+  document.getElementById('copyBtn').onclick = () => {
+    if (!dstArea.value) return;
+    navigator.clipboard?.writeText(dstArea.value);
+    setStatus('✓ скопировано в буфер');
+  };
+
+  // История
+  function getHistory() { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+
+  function addHistory(src, dst) {
+    const h = getHistory();
+    h.unshift({ src, dst, pair: fromLang.value + '→' + toLang.value });
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, 8)));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const h = getHistory();
+    historyList.innerHTML = h.length ? '' : '<div class="hist-item hist-src">Пока пусто — переведи что-нибудь ✨</div>';
+    for (const item of h) {
+      const div = document.createElement('div');
+      div.className = 'hist-item';
+      const pair = document.createElement('span');
+      pair.className = 'hist-pair';
+      pair.textContent = item.pair;
+      const src = document.createElement('span');
+      src.className = 'hist-src';
+      src.textContent = item.src;
+      src.title = item.src;
+      const arrow = document.createElement('span');
+      arrow.textContent = '→';
+      arrow.style.color = '#64748b';
+      const dst = document.createElement('span');
+      dst.className = 'hist-dst';
+      dst.textContent = item.dst;
+      dst.title = item.dst;
+      div.append(pair, src, arrow, dst);
+      historyList.appendChild(div);
+    }
+  }
+
+  renderHistory();
+  srcArea.focus();
+</script>
+</body>
+</html>

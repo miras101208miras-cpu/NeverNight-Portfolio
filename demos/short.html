@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeverShort — Сокращатель ссылок EcosystemNever</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Montserrat:wght@600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #04060a;
+      --card: rgba(16, 23, 38, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --cyan: #00f0ff;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: #f8fafc;
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+      display: flex; flex-direction: column; align-items: center;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 70vw; height: 50vh; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.14), rgba(168, 85, 247, 0.1), transparent 70%);
+      filter: blur(90px);
+    }
+    .topbar { width: 100%; max-width: 720px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 48px; gap: 12px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .brand-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(236, 72, 153, 0.1);
+      border: 1px solid rgba(236, 72, 153, 0.45);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; box-shadow: 0 0 15px rgba(236, 72, 153, 0.35);
+    }
+    .brand-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; }
+    .brand-title span { color: var(--pink); }
+    .back-btn {
+      padding: 9px 18px; border-radius: 20px; text-decoration: none;
+      color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.35);
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; transition: all 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .back-btn:hover { background: rgba(0, 240, 255, 0.12); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+
+    .wrap { width: 100%; max-width: 720px; text-align: center; }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--pink); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 800; margin-bottom: 12px; }
+    h1 span { background: linear-gradient(135deg, var(--pink), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sub { color: var(--muted); margin-bottom: 36px; font-size: 0.98rem; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 28px; backdrop-filter: blur(16px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      text-align: left;
+    }
+    .input-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .url-input {
+      flex: 1; min-width: 220px;
+      background: rgba(0, 0, 0, 0.45); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 18px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; outline: none;
+      transition: all 0.3s;
+    }
+    .url-input:focus { border-color: var(--pink); box-shadow: 0 0 15px rgba(236, 72, 153, 0.3); }
+    .btn-short {
+      padding: 14px 28px; border: none; border-radius: 12px; cursor: pointer;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 0.9rem;
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.4); transition: all 0.3s;
+    }
+    .btn-short:hover { box-shadow: 0 0 35px rgba(236, 72, 153, 0.7); transform: translateY(-2px); }
+    .err { color: #ff5f56; font-size: 0.78rem; min-height: 18px; margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
+
+    .result {
+      display: none; margin-top: 22px; padding: 20px;
+      background: rgba(0, 0, 0, 0.4); border: 1px dashed rgba(236, 72, 153, 0.5);
+      border-radius: 14px; text-align: center;
+    }
+    .result.show { display: block; animation: pop 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .short-link {
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.25rem;
+      color: var(--cyan); word-break: break-all; margin-bottom: 12px;
+    }
+    .copy-btn {
+      padding: 10px 22px; border-radius: 25px; border: 1px solid rgba(0, 240, 255, 0.4);
+      background: rgba(0, 240, 255, 0.08); color: var(--cyan); cursor: pointer;
+      font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.78rem; transition: all 0.3s;
+    }
+    .copy-btn:hover { background: rgba(0, 240, 255, 0.2); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+
+    .list-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin: 34px 0 12px; text-align: left; }
+    .links-list { display: flex; flex-direction: column; gap: 10px; }
+    .link-item {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 16px; transition: all 0.3s;
+    }
+    .link-item:hover { border-color: rgba(236, 72, 153, 0.4); }
+    .link-code { font-family: 'JetBrains Mono', monospace; font-weight: 800; color: var(--cyan); font-size: 0.9rem; }
+    .link-orig { flex: 1; color: var(--muted); font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 140px; }
+    .mini-btn {
+      padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05); color: #e2e8f0; cursor: pointer;
+      font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; transition: all 0.25s;
+    }
+    .mini-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .empty { color: #64748b; font-size: 0.82rem; text-align: center; padding: 18px; }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <div class="topbar">
+    <a href="../index.html" class="brand">
+      <div class="brand-logo">🔗</div>
+      <div class="brand-title">Never<span>Short</span></div>
+    </a>
+    <a href="../index.html" class="back-btn">← ПОРТФОЛИО</a>
+  </div>
+
+  <div class="wrap">
+    <div class="tag">// Демо-сервис EcosystemNever</div>
+    <h1>Сокращай ссылки <span>в стиле Never</span></h1>
+    <p class="sub">Вставь длинный адрес — получишь короткую ссылку вида <b style="color:#fff;">never.gg/XXXXXX</b>. Демо работает локально: твои ссылки сохраняются в браузере.</p>
+
+    <div class="card">
+      <div class="input-row">
+        <input type="text" id="urlInput" class="url-input" placeholder="https://очень-длинная-ссылка.ру/путь/к/чему-то" spellcheck="false">
+        <button class="btn-short" id="shortBtn">⚡ Сократить</button>
+      </div>
+      <div class="err" id="err"></div>
+
+      <div class="result" id="result">
+        <div class="short-link" id="shortLink">never.gg/------</div>
+        <button class="copy-btn" id="copyBtn">📋 Копировать</button>
+      </div>
+    </div>
+
+    <div class="list-title">// Твои сокращённые ссылки</div>
+    <div class="links-list" id="linksList">
+      <div class="empty" id="emptyMsg">Пока пусто — сократи первую ссылку выше ✂️</div>
+    </div>
+  </div>
+
+<script>
+  const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const input = document.getElementById('urlInput');
+  const err = document.getElementById('err');
+  const result = document.getElementById('result');
+  const shortLinkEl = document.getElementById('shortLink');
+  const listEl = document.getElementById('linksList');
+  const emptyMsg = document.getElementById('emptyMsg');
+  let lastCode = '';
+
+  const getLinks = () => JSON.parse(localStorage.getItem('nevershort_links') || '[]');
+  const saveLinks = (l) => localStorage.setItem('nevershort_links', JSON.stringify(l));
+
+  function makeCode() {
+    let code = '';
+    for (let i = 0; i < 6; i++) code += CHARS[Math.floor(Math.random() * CHARS.length)];
+    return code;
+  }
+
+  function normalizeUrl(raw) {
+    let url = raw.trim();
+    if (!url) return null;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try { new URL(url); return url; } catch { return null; }
+  }
+
+  document.getElementById('shortBtn').onclick = shorten;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') shorten(); });
+
+  function shorten() {
+    const url = normalizeUrl(input.value);
+    if (!url) {
+      err.textContent = '⚠ Введи корректную ссылку (например: site.com/page)';
+      result.classList.remove('show');
+      return;
+    }
+    err.textContent = '';
+    const links = getLinks();
+    let code = makeCode();
+    while (links.some(l => l.code === code)) code = makeCode();
+    links.unshift({ code, url, date: Date.now() });
+    saveLinks(links);
+    lastCode = code;
+    shortLinkEl.textContent = 'never.gg/' + code;
+    result.classList.add('show');
+    input.value = '';
+    renderList();
+  }
+
+  document.getElementById('copyBtn').onclick = () => {
+    const text = 'never.gg/' + lastCode;
+    navigator.clipboard?.writeText(text);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Скопировано!';
+    setTimeout(() => btn.textContent = '📋 Копировать', 1500);
+  };
+
+  function renderList() {
+    const links = getLinks();
+    listEl.innerHTML = '';
+    emptyMsg.style.display = links.length ? 'none' : 'block';
+    if (!links.length) listEl.appendChild(emptyMsg);
+
+    for (const l of links) {
+      const item = document.createElement('div');
+      item.className = 'link-item';
+
+      const code = document.createElement('span');
+      code.className = 'link-code';
+      code.textContent = 'never.gg/' + l.code;
+
+      const orig = document.createElement('span');
+      orig.className = 'link-orig';
+      orig.textContent = l.url;
+      orig.title = l.url;
+
+      const go = document.createElement('button');
+      go.className = 'mini-btn';
+      go.textContent = 'Открыть ↗';
+      go.onclick = () => window.open(l.url, '_blank');
+
+      const copy = document.createElement('button');
+      copy.className = 'mini-btn';
+      copy.textContent = 'Копировать';
+      copy.onclick = () => { navigator.clipboard?.writeText('never.gg/' + l.code); copy.textContent = '✓'; setTimeout(() => copy.textContent = 'Копировать', 1200); };
+
+      const del = document.createElement('button');
+      del.className = 'mini-btn';
+      del.textContent = '✕';
+      del.onclick = () => { saveLinks(getLinks().filter(x => x.code !== l.code)); renderList(); };
+
+      item.append(code, orig, go, copy, del);
+      listEl.appendChild(item);
+    }
+  }
+
+  renderList();
+</script>
+</body>
+</html>

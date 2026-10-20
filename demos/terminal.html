@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeverTerminal — Кибер-консоль EcosystemNever</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #04060a;
+      --card: rgba(13, 19, 33, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #00ff88;
+      --cyan: #00f0ff;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .topbar {
+      width: 100%; max-width: 1000px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .brand-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.4);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-weight: 700; font-size: 0.9rem;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    }
+    .brand-title { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px; }
+    .brand-title span { color: var(--accent); }
+    .back-btn {
+      padding: 9px 18px; border-radius: 20px; text-decoration: none;
+      color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.35);
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+    .back-btn:hover { background: rgba(0, 240, 255, 0.12); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+
+    .terminal {
+      width: 100%; max-width: 1000px;
+      background: rgba(3, 6, 12, 0.92);
+      border: 1px solid rgba(0, 255, 136, 0.25);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(0, 255, 136, 0.12);
+      display: flex; flex-direction: column;
+      height: min(78vh, 640px);
+    }
+    .term-header {
+      background: #090e18;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .dots { display: flex; gap: 7px; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .term-title { font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; }
+    .term-body {
+      flex: 1; overflow-y: auto; padding: 20px;
+      font-size: 0.85rem; line-height: 1.65;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .term-body::-webkit-scrollbar { width: 8px; }
+    .term-body::-webkit-scrollbar-thumb { background: rgba(0, 255, 136, 0.25); border-radius: 4px; }
+    .term-input-line {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px; border-top: 1px solid var(--border);
+      background: rgba(9, 14, 24, 0.9);
+    }
+    .prompt { color: var(--accent); font-weight: 700; }
+    .term-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: #fff; font-family: inherit; font-size: 0.85rem;
+    }
+    .c-green { color: var(--accent); }
+    .c-cyan { color: var(--cyan); }
+    .c-purple { color: #a855f7; }
+    .c-gold { color: #f59e0b; }
+    .c-muted { color: var(--muted); }
+    .c-white { color: #fff; font-weight: 700; }
+    .term-body a { color: var(--cyan); text-decoration: none; border-bottom: 1px dashed rgba(0, 240, 255, 0.4); }
+    .term-body a:hover { color: #fff; }
+    .hintbar {
+      max-width: 1000px; width: 100%; margin-top: 14px;
+      font-size: 0.7rem; color: var(--muted); text-align: center; letter-spacing: 1px;
+    }
+    .hintbar b { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a href="../index.html" class="brand">
+      <div class="brand-logo">&gt;_</div>
+      <div class="brand-title">Never<span>Terminal</span></div>
+    </a>
+    <a href="../index.html" class="back-btn">← ПОРТФОЛИО</a>
+  </div>
+
+  <div class="terminal">
+    <div class="term-header">
+      <div class="dots">
+        <div class="dot" style="background:#ff5f56;"></div>
+        <div class="dot" style="background:#ffbd2e;"></div>
+        <div class="dot" style="background:#27c93f;"></div>
+      </div>
+      <div class="term-title">nevernight@ecosystemnever: ~</div>
+    </div>
+    <div class="term-body" id="termBody"></div>
+    <div class="term-input-line">
+      <span class="prompt">nevernight@never:~$</span>
+      <input class="term-input" id="termInput" autocomplete="off" autofocus spellcheck="false">
+    </div>
+  </div>
+
+  <div class="hintbar">Введи <b>help</b> — покажу все команды • <b>projects</b> — мои проекты • <b>skills</b> — стек</div>
+
+<script>
+  const body = document.getElementById('termBody');
+  const input = document.getElementById('termInput');
+  const history = [];
+  let histIdx = -1;
+
+  const out = (html) => { body.innerHTML += html + '\n'; body.scrollTop = body.scrollHeight; };
+  const clear = () => { body.innerHTML = ''; };
+
+  const COMMANDS = {
+    help: {
+      desc: 'список команд',
+      run: () => out(
+        '<span class="c-white">Доступные команды:</span>\n' +
+        '  <span class="c-green">help</span>      — эта справка\n' +
+        '  <span class="c-green">about</span>     — кто такой NeverNight\n' +
+        '  <span class="c-green">projects</span>  — список проектов (с ссылками)\n' +
+        '  <span class="c-green">skills</span>    — технологии и навыки\n' +
+        '  <span class="c-green">contact</span>   — как со мной связаться\n' +
+        '  <span class="c-green">ecosystem</span> — 정보 о экосистеме\n' +
+        '  <span class="c-green">date</span>      — текущая дата и время\n' +
+        '  <span class="c-green">clear</span>     — очистить консоль\n' +
+        '  <span class="c-green">sudo</span>      — попробуй 😉'
+      )
+    },
+    about: {
+      desc: 'о разработчике',
+      run: () => out(
+        '<span class="c-cyan">NeverNight</span> — начинающий fullstack-разработчик,\n' +
+        'создатель цифровой экосистемы <span class="c-purple">EcosystemNever</span>.\n' +
+        'Строю не отдельные страницы, а целые продукты: портал, кинотеатр,\n' +
+        'мессенджер, ботов и демо-сервисы. Открыт к стажировке и заказам.'
+      )
+    },
+    projects: {
+      desc: 'мои проекты',
+      run: () => out(
+        '<span class="c-white">Проекты NeverNight:</span>\n' +
+        '  <span class="c-cyan">1.</span> <a href="https://miras101208miras-cpu.github.io/EcosystemNever/" target="_blank">EcosystemNever</a> <span class="c-muted">— главный портал</span>\n' +
+        '  <span class="c-cyan">2.</span> <a href="https://miras101208miras-cpu.github.io/NeverProduct-Demon-Slayer/" target="_blank">NeverProduct: Demon Slayer</a> <span class="c-muted">— архив КРД</span>\n' +
+        '  <span class="c-cyan">3.</span> <a href="https://miras101208miras-cpu.github.io/EcosystemNever/party/index.html" target="_blank">NeverParty</a> <span class="c-muted">— синхро-кинотеатр</span>\n' +
+        '  <span class="c-cyan">4.</span> <a href="https://t.me/ecosystem_never_bot" target="_blank">EcosystemNever Bot</a> <span class="c-muted">— Telegram-бот</span>\n' +
+        '  <span class="c-cyan">5.</span> NeverMessenger <span class="c-muted">— реалтайм-мессенджер (localhost)</span>'
+      )
+    },
+    skills: {
+      desc: 'стек технологий',
+      run: () => out(
+        '<span class="c-white">Стек:</span>\n' +
+        '  <span class="c-green">████████████</span> HTML / CSS      <span class="c-muted">продвинутый</span>\n' +
+        '  <span class="c-green">███████████░</span> JavaScript     <span class="c-muted">уверенный</span>\n' +
+        '  <span class="c-green">████████░░░░</span> Node.js        <span class="c-muted">базовый+</span>\n' +
+        '  <span class="c-green">███████░░░░░</span> Socket.IO/MQTT <span class="c-muted">realtime</span>\n' +
+        '  <span class="c-green">██████░░░░░░</span> SQLite         <span class="c-muted">базовый</span>'
+      )
+    },
+    contact: {
+      desc: 'контакты',
+      run: () => out(
+        '  ✈ Telegram-бот: <a href="https://t.me/ecosystem_never_bot" target="_blank">@ecosystem_never_bot</a>\n' +
+        '  🐙 GitHub:       <a href="https://github.com/miras101208miras-cpu" target="_blank">@miras101208miras-cpu</a>\n' +
+        '  🌐 Экосистема:   <a href="https://miras101208miras-cpu.github.io/EcosystemNever/" target="_blank">EcosystemNever</a>'
+      )
+    },
+    ecosystem: {
+      desc: 'о экосистеме',
+      run: () => out(
+        '<span class="c-purple">EcosystemNever</span> — цифровая экосистема связанных продуктов:\n' +
+        '  <span class="c-cyan">•</span> Портал с калькулятором и сервисами\n' +
+        '  <span class="c-cyan">•</span> NeverParty — синхронный кибер-кинотеатр (MQTT)\n' +
+        '  <span class="c-cyan">•</span> NeverMessenger — чаты в реальном времени\n' +
+        '  <span class="c-cyan">•</span> NeverTerminal, NeverShort, NeverWheel — демо-сервисы\n' +
+        '  <span class="c-cyan">•</span> Telegram-бот-ассистент'
+      )
+    },
+    date: {
+      desc: 'дата и время',
+      run: () => out('<span class="c-gold">' + new Date().toLocaleString('ru-RU') + '</span>')
+    },
+    clear: { desc: 'очистить консоль', run: () => clear() },
+    sudo: {
+      desc: '',
+      run: () => out('<span class="c-red" style="color:#ff5f56;">Пользователь nevernight не в списке суперпользователей. Это инцидент будет записан.</span>\n<span class="c-muted">(шучу — но права админа всё равно у создателя экосистемы 😉)</span>')
+    }
+  };
+
+  function execute(raw) {
+    const cmd = raw.trim().toLowerCase();
+    out('<span class="c-green">nevernight@never:~$</span> <span class="c-white">' + escapeHtml(raw) + '</span>');
+    if (!cmd) return;
+    if (COMMANDS[cmd]) COMMANDS[cmd].run();
+    else out('<span style="color:#ff5f56;">Команда не найдена:</span> ' + escapeHtml(cmd) + ' <span class="c-muted">— введи help</span>');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const v = input.value;
+      if (v.trim()) { history.push(v); histIdx = history.length; }
+      input.value = '';
+      execute(v);
+    } else if (e.key === 'ArrowUp') {
+      if (histIdx > 0) { histIdx--; input.value = history[histIdx]; e.preventDefault(); }
+    } else if (e.key === 'ArrowDown') {
+      if (histIdx < history.length - 1) { histIdx++; input.value = history[histIdx]; }
+      else { histIdx = history.length; input.value = ''; }
+    }
+  });
+
+  // Boot-анимация
+  const boot = [
+    '<span class="c-green">[OK]</span> Загрузка ядра EcosystemNever...',
+    '<span class="c-green">[OK]</span> Инициализация неонового интерфейса...',
+    '<span class="c-green">[OK]</span> Подключение к экосистеме...',
+    '<span class="c-green">[OK]</span> Доступ разрешён.',
+    '',
+    '<span class="c-cyan">███╗   ██╗██╗██████╗ ███████╗ ██████╗ ███████╗██╗   ██╗</span>',
+    '<span class="c-cyan">████╗  ██║██║██╔══██╗██╔════╝██╔═══██╗██╔════╝██║   ██║</span>',
+    '<span class="c-cyan">██╔██╗ ██║██║██║  ██║█████╗  ██║   ██║█████╗  ██║   ██║</span>',
+    '<span class="c-cyan">██║╚██╗██║██║██████╔╝██╔══╝  ╚██████╔╝██║     ╚██████╔╝</span>',
+    '<span class="c-cyan">██║ ╚████║██║╚═════╝ ███████╗ ╚═════╝ ╚═╝      ╚═════╝ </span>',
+    '<span class="c-cyan">╚═╝  ╚═══╝╚═╝      ╚══════╝                           </span>',
+    '',
+    'Добро пожаловать в консоль, <span class="c-white">гость</span>. Введи <span class="c-green">help</span>, чтобы начать.',
+    ''
+  ];
+
+  (async function typeBoot() {
+    for (const line of boot) {
+      out(line);
+      await new Promise(r => setTimeout(r, 140));
+    }
+  })();
+</script>
+</body>
+</html>
